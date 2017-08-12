@@ -1,0 +1,35 @@
+dl_parameters:
+    model_name: heart_disease_config_test
+    model_string: MLP
+    layers: 2
+    batch_size: 32
+    epochs: 50
+    dropout_rate: 0.0
+    hidden_size: 128
+    embedding_size: 1000
+    learning_rate: 0.01
+    momentum: 0.9
+    optimiser: adam
+    init_mode: uniform
+    activation1: relu
+    activation2: sigmoid
+    loss: mean_squared_error
+    evaluation_metrics: ['accuracy']
+    weight_constraint: 5
+    prediction: classification
+    learning_rate: 0.03
+dataset:
+    path: cleveland.txt
+    weights_out: cleveland-out.h5
+setup:
+    train: True
+    hyperparameters: True
+    verbose: False
+    multithreaded: True
+    gpu: False
+hyperparameter_setup:
+    search: random
+    cross_validation_folds: 5
+    verbose: True
+    logging: True
+    n_iter: 20
