@@ -21,7 +21,7 @@
         "learning_rate":0.03
     },
     "dataset":{
-        "path":"cleveland.txt",
+        "path":"3D_spatial_network.txt",
         "weights_out":"cleveland-out.h5"        
     },
     "setup":{
@@ -35,7 +35,7 @@
         "search":"random",    
         "verbose":"True",
         "logging":"True",
-        "n_iter":5,
+        "n_iter":1,
         "cross_validation_folds":5
     }        
 }

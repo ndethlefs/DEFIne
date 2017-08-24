@@ -4,6 +4,10 @@ from keras.engine.training import _slice_arrays
 import numbers
 from keras.utils import np_utils
 import sys
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.decomposition import PCA
+
 
 class DataSet:
 
@@ -30,6 +34,9 @@ class DataSet:
 		# determine number of symbols and maximum sequence length.
 		self.countSymbols()
 		self.countMaxLen()			
+		
+		# keep a copy of the flat output label vector for visualisation.
+		self.labels = Y_set
 
 
 
@@ -246,6 +253,40 @@ class DataSet:
 		
 		return X_train, X_val, Y_train, Y_val
 			
+			
+	def visualise(self):
+	
+		X = self.X_set
+		y = self.labels
+
+		fig = plt.figure(0, figsize=(10, 8))
+		ax = Axes3D(fig, rect=[0, 0, .95, 1], elev=48, azim=134)
+
+		pca = PCA(n_components=3)
+		X_reduced = pca.fit_transform(X)
+		used_labels = []
+
+		colour_scheme = plt.cm.Set1
+
+		for i, item in enumerate(X_reduced):
+			if not y[i] in used_labels:
+				ax.scatter(item[0], item[1], item[2], c = colour_scheme(y[i]/10), s=40, edgecolor='k', label=y[i])
+				used_labels.append(y[i])
+			else:
+				ax.scatter(item[0], item[1], item[2], c = colour_scheme(y[i]/10), s=40, edgecolor='k')	
 		
+
+		ax.legend(loc="lower right")           
+		ax.set_title("First three PCA directions")
+		ax.set_xlabel("1st eigenvector")
+		ax.w_xaxis.set_ticklabels([])
+		ax.set_ylabel("2nd eigenvector")
+		ax.w_yaxis.set_ticklabels([])
+		ax.set_zlabel("3rd eigenvector")
+		ax.w_zaxis.set_ticklabels([])
+	
+		plt.show()
+	
+			
 		
 		

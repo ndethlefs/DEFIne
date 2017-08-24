@@ -31,9 +31,7 @@ def isInt(value):
 		return False
 		
 def toBool(val):
-	print('val', val)
 	if val=="True" or val=='True' or val==True:
-		print('valfewfewew', val)
 		return True
 	else:
 		return False			
@@ -139,7 +137,9 @@ data_repo = DataRepository()
 data_repo.load(config['dataset']['path']) 
 data = DataSet(data_repo.X_set, data_repo.Y_set, config['dl_parameters']['prediction'])
 data.representData().shuffleAndSplit()	
+#data.visualise()
 	
+
 deep = defineDL(config['dl_parameters'])
 
 	
