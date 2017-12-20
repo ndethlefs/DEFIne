@@ -20,45 +20,13 @@ Nina, 13 June 2017.
 '''    
 
 data_repo = DataRepository()
-# Binary classification tasks (work for MLPs and recurrent models on one or multiple threads).
-#data_repo.load('cleveland') 
-#data_repo.load('breast-cancer') 
-
-# Classification task with multiple categorical outputs (work for MLPs and recurrent models on one or multiple threads).
-#data_repo.load('iris') 
-#data_repo.load('abalone') 
-#data_repo.load('wine') 
-data_repo.load('winequality-red') 
-#data_repo.load('winequality-white') 
-#data_repo.load('uci_har')
-#data_repo.load('poker') 
-
-# Binary classification tasks with a string output rather than an int. Work on MLPs and recurrent models, one or multiple threads.
-#data_repo.load('bank') 
-#data_repo.load('car') 
-#data_repo.load('adult') 
-
-# Regression task. Works with MLPs and recurrent models.
-#data_repo.load('forestfires') 
-#data_repo.load('abalone') # may need an additional distinction in repository (classification / regression)
-
-
-print(data_repo.X_set)
-print(data_repo.X_set.shape)
-print(data_repo.Y_set)
-print(data_repo.Y_set.shape)
-#sys.exit(0)
+data_repo.load('eeg_eyes.txt') 
 
 X_set = np.asarray(data_repo.X_set)
 Y_set = np.asarray(data_repo.Y_set)
 
-print(X_set.shape)
-print(Y_set.shape)
-print('ss', set(Y_set))
-#sys.exit(0)
-
 print('-'*50)
-print('Designing model: ***', 'heart_disease', '***')
+print('Designing model: ***', 'eeg_eyes', '***')
 print('(DataSet)')
 
 start_time = time.time()
@@ -73,15 +41,10 @@ print('-'*50)
 print('(DeepLearner)')
 
 parameters = {
-'model_name' : 'heart_disease_cpu_gru',
+'model_name' : 'eeg_eyes_mlp',
 'modelString' : 'MLP',
 'prediction' : data.prediction
 }		
-
-
-# Use this to train with given parameters.
-		
-#defineDL(parameters).designModel(data).compileModel().trainModel(data, output_file='model-weights.h5', verbose=False)
 
 
 # Use this to do hyper-parameter optimisation. 

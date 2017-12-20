@@ -3,13 +3,16 @@ from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recur
 import datetime, time
 import numpy as np
 from keras.constraints import maxnorm
-from keras.optimizers import SGD, Adam
+from keras.optimizers import SGD, Adam, RMSprop, Adagrad, Adadelta, Adamax, Nadam
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RandomizedSearchCV
 import multiprocessing
 import json
 import sys
+from scipy import spatial
+from scipy.spatial import distance
+
 
 class DeepLearner:
 
@@ -30,7 +33,7 @@ class DeepLearner:
 		self.eval_metrics = eval_metrics
 		self.dropout_rate = dropout_rate
 		self.weight_constraint = weight_constraint		
-		self.optimiser = Adam(learning_rate, momentum)		
+		self.optimiser = Adam(learning_rate)		
 		self.init_mode = init_mode
 		self.activation1 = activation1
 		self.activation2 = activation2		
@@ -326,55 +329,68 @@ class DeepLearner:
 		kerasmodel = KerasClassifier(build_fn=model, verbose=verbose)
 		if 'init_mode' in paras4Op:
 			init_mode = ['uniform', 'lecun_uniform', 'normal', 'zero', 'glorot_normal', 'glorot_uniform', 'he_normal', 'he_uniform']
+#			init_mode = ['uniform']			
 		else:
 			init_mode = [self.init_mode]
 		if 'weight_constraint' in paras4Op:	
-			weight_constraint = [1, 2, 3, 4, 5]		
+#			weight_constraint = [1]		
+			weight_constraint = [1, 2, 3, 4, 5]					
 		else:
 			weight_constraint = [self.weight_constraint]	
 		if 'dropout_rate' in paras4Op:				
-			dropout_rate = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+#			dropout_rate = [0.0]
+			dropout_rate = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]			
 		else:
 			dropout_rate = [self.dropout_rate]	
 		if 'learning_rate' in paras4Op:
-			learning_rate = [0.001, 0.01, 0.1, 0.2, 0.3]
+#			learning_rate = [0.001]
+			learning_rate = [0.001, 0.01, 0.1, 0.2, 0.3]			
 		else:
 			learning_rate = [self.learning_rate]	
 		if 'momentum' in paras4Op:
-			momentum = [0.0, 0.2, 0.4, 0.6, 0.8, 0.9]
+#			momentum = [0.0]
+			momentum = [0.0, 0.2, 0.4, 0.6, 0.8, 0.9]			
 		else:
 			momentum = [self.momentum]	
 		if 'hidden_size' in paras4Op:
-			hidden_size = [1, 5, 10, 15, 20, 25, 30, 50, 100, 150, 200]
+#			hidden_size = [1]
+			hidden_size = [1, 5, 10, 15, 20, 25, 30, 50, 100, 150, 200]			
 		else:
 			hidden_size = [self.hidden_size]
 		if 'batch_size' in paras4Op:
-			batch_size= [10, 20, 40, 60, 80, 100]
+#			batch_size= [10]
+			batch_size= [10, 20, 40, 60, 80, 100]			
 		else:
 			batch_size = [self.batch_size]
 		if 'epochs' in paras4Op:
-			epochs = [10, 20, 50, 100, 200]
+#			epochs = [10]
+			epochs = [10, 20, 50, 100]			
 		else:
 			epochs = [self.epochs]			
 		if 'activation1' in paras4Op:
-			activation1 = ['softmax', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid', 'hard_sigmoid', 'linear']
+#			activation1 = ['softmax']
+			activation1 = ['softmax', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid', 'hard_sigmoid', 'linear']			
 		else:
 			activation1 = [self.activation1]	
 		if 'activation2' in paras4Op:
-			activation2 = ['softmax', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid', 'hard_sigmoid', 'linear']
+#			activation2 = ['relu']
+			activation2 = ['softmax', 'softplus', 'softsign', 'relu', 'tanh', 'sigmoid', 'hard_sigmoid', 'linear']			
 		else:
 			activation2 = [self.activation2]				
 		if 'optimiser' in paras4Op:
 #			optimiser = ['Adam', 'SGD']
-			optimiser = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']			
+#			optimiser = ['SGD']			
+			optimiser = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']						
 		else:
 			optimiser = [Adam(learning_rate, momentum)]
 		if 'loss' in paras4Op:
-			loss = ['mean_squared_error', 'mean_absolute_error', 'mean_absolute_percentage_error', 'mean_squared_logarithmic_error', 'squared_hinge, hinge', 'logcosh', 'categorical_crossentropy', 'sparse_categorical_crossentropy', 'binary_crossentropy', 'kullback_leibler_divergence', 'poisson', 'cosine_proximity']		
+#			loss = ['mean_squared_error']		
+			loss = ['mean_squared_error', 'mean_absolute_error', 'mean_absolute_percentage_error', 'mean_squared_logarithmic_error', 'squared_hinge, hinge', 'logcosh', 'categorical_crossentropy', 'sparse_categorical_crossentropy', 'binary_crossentropy', 'kullback_leibler_divergence', 'poisson', 'cosine_proximity']					
 		else:
 			loss = [self.loss]	
 		if 'layers' in paras4Op:
-			layers = [1, 2, 3]
+#			layers = [1]
+			layers = [1, 2, 3]			
 		else:
 			layers = [self.layers]				
 		if 'model_string' in paras4Op:
@@ -410,12 +426,12 @@ class DeepLearner:
 			print("%f (%f) with: %r" % (mean, stdev, param))
 			
 		if logging==True:
-			self.logHyperParameters(self.model_name, search, search_space, start_time, (search_result.best_score_, search_result.best_params_), zip(means, params, fit_times))	
+			self.logHyperParameters(self.model_name, search, search_space, start_time, (search_result.best_score_, search_result.best_params_), zip(means, params, fit_times), multithreaded, cv, n_iter)				
 
 		return (search_result.best_score_, search_result.best_params_)
 		
 		
-	def logHyperParameters(self, model_name, search_algorithm, search_space, start_time, best_search, all_searches):
+	def logHyperParameters(self, model_name, search_algorithm, search_space, start_time, best_search, all_searches, multithreaded, cross_validation_folds, hyper_iterations):
 	
 		
 		outfile = open("./logs/"+model_name+".json", 'w')
@@ -427,6 +443,10 @@ class DeepLearner:
 		general_parameters['search_algorithm'] = search_algorithm
 		general_parameters['search_space'] = search_space
 		general_parameters['best_result'] = best_search[0]
+		general_parameters['prediction'] = self.prediction		
+		general_parameters['multithreaded'] = multithreaded
+		general_parameters['cross_validation_folds'] = cross_validation_folds
+		general_parameters['hyper_iterations'] = hyper_iterations		
 		
 		best_parameters = best_search[1]
 		for key in best_parameters:
@@ -452,6 +472,60 @@ class DeepLearner:
 		
 		outfile.close()
 		print('\n Best model achieves', best_search[0], 'with parameters', best_search[1], '... yay! \n')
+		
+
+	def getImportantParameters(self, dict):
+
+		parameters = ['init_mode', 'vocab_size', 'activation1', 'activation2', 'loss', 'hidden_size', 'momentum', 'layers', 'dropout_rate', 'epochs', 'learning_rate', 'optimiser', 'weight_constraint', 'batch_size']
+
+		length_scale_cutoff = 4
+		important = []
+
+		for d in dict:
+			if d in parameters:
+				feature = d
+				length_scale = int(str(dict[d]).replace("(length_scale=", "").replace(")", ""))
+				if length_scale < 3:
+					important.append(d)
+		
+		return important		
+		
+
+	def getDataVector(self, dict):		
+
+		vector = []
+		for d in dict:
+			if d=='normalised':
+				vector = dict[d]
+				vector = vector.replace("\n", "").replace("[", "").replace("]", "").split()
+				v = []
+				for ele in vector:
+					v.append(float(ele))
+				vector = np.array(v).flatten()
+		
+		return vector		
+		
+
+	
+	def getMostSimilarDataset(self, vector, dict, metric='euclidean'):	
+
+		similar = 1000
+		dataset = ""
+
+		for d in dict:
+			v = self.getDataVector(dict[d])
+			if metric=='cosine':
+				s = 1 - spatial.distance.cosine(v, vector)
+				if s < similar:
+					similar = s
+					dataset = d
+			else:	
+				s = distance.euclidean(v, vector)			
+				if s < similar:
+					similar = s
+					dataset = d	
+
+		return dataset, similar		
 		
 		
 	def updateParameters(self, best):
@@ -508,6 +582,21 @@ def defineDL(parameters):
 		learning_rate = parameters.get('learning_rate', 0.01)
 		momentum = parameters.get('momentum', 0.9)
 		optimiser = parameters.get('optimiser', 'adam')
+		if optimiser == 'SGD':
+			optimiser = SGD(learning_rate, momentum)
+		elif optimiser == 'RMSprop':
+			optimiser = RMSprop(learning_rate)
+		elif optimiser == 'Adagrad':
+			optimiser = Adagrad(learning_rate)
+		elif optimiser == 'Adadelta':
+			optimiser = Adadelta(learning_rate)			
+		elif optimiser == 'Adamax':
+			optimiser = Adamax(learning_rate)						
+		elif optimiser == 'Nadam':
+			optimiser = Nadam(learning_rate)	
+		else:
+			optimiser = Adam(learning_rate)											
+		
 		init_mode = parameters.get('init_mode', 'uniform')		
 		activation1 = parameters.get('activation1', 'relu')				
 		activation2 = parameters.get('activation2', 'sigmoid')		

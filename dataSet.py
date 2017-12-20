@@ -7,6 +7,8 @@ import sys
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.decomposition import PCA
+from scipy import stats
+from scipy.stats import iqr, kurtosis, skew
 
 
 class DataSet:
@@ -17,7 +19,7 @@ class DataSet:
 		self.max_len = 0
 
 		self.X_train = []
-		self.Y_val = []
+		self.X_val = []
 		self.Y_train = []
 		self.Y_val = []
 	
@@ -27,13 +29,34 @@ class DataSet:
 		self.indices_char = {}
 		self.dimensionality = ''
 		self.outputs = 1		
+		self.labels = []
 		if not hasattr(Y_set[0], '__iter__'):
 			self.outputs = len(set(Y_set))			
 		self.prediction = prediction
+		self.data_type = 'numeric'
 			
 		# determine number of symbols and maximum sequence length.
 		self.countSymbols()
 		self.countMaxLen()			
+		
+		# some other statistics about the datasets
+		
+		self.mean_X = 0
+		self.median_X = 0		
+		self.means = []
+		self.medians = []
+		self.modes = []	
+		self.stds = []			
+		self.stds_x	= 0
+		self.iqr_x = 0
+		self.iqrs = []		
+		self.normal_distribution = True	
+		self.skew = 0
+		self.skew_x = 0		
+		self.kurtosis = 0		
+		self.kurtosis_x = 0				
+		self.label_distribution = []
+		
 		
 		# keep a copy of the flat output label vector for visualisation.
 		self.labels = Y_set
@@ -56,6 +79,7 @@ class DataSet:
 		self.Y_set = np.asarray(self.Y_set, dtype=np.int32)
 		sample_Y = self.Y_set[0] 
 		self.outputs = len(set(self.Y_set))
+		self.labels = self.Y_set
 				
 		if hasattr(sample_Y, '__iter__'):
 			print('Use a 3D representation to model sequence-to-sequence task... (encoding.)')		
@@ -67,18 +91,27 @@ class DataSet:
 			if not False in types:
 				print('Use a 2D representation for classification task (numeric values)... (no encoding.)')			
 				X, Y = self.representDataAs2DNumeric(self.X_set, self.Y_set)	
+				self.data_type = 'numeric'
 			else:
 				print('Use a 2D representation for classification task (symbolic values)... (encoding.)')						
 				X, Y = self.representDataAs2D(self.X_set, self.Y_set)	
+				self.data_type = 'symbolic'				
 
 		self.X_set = X
-		self.Y_set = Y		
+		self.Y_set = Y
+
+		self.computeCentrality()
+		self.computeNormalDistribution()
+		self.computeDispersion()
+		self.computeShape()		
+		self.computeDistribution()				
 
 		return self
 
 
 	def representDataAs2DNumeric(self, X_set, Y_set):
 		# Use this for tasks that classify a single output value.
+		lens = []
 		X_2D = np.asarray(X_set)
 		Y_2D = np.asarray(Y_set)		
 
@@ -143,7 +176,7 @@ class DataSet:
 		# encode X into a 2D matrix / array of arrays.
 		for i, item in enumerate(X_set):
 			for j, jtem in enumerate(item):
-				item[j] = self.char_indices[jtem]
+				item[j] = self.char_indices[jtem] 
 			X_set[i] = item
 		return X_set	
 			
@@ -202,6 +235,7 @@ class DataSet:
 	
 		for x in self.X_set:
 			self.text = self.text + ' '.join(x) + ' '
+#			print(self.text)
 
 		if hasattr(self.Y_set[0], '__iter__'):
 			for y in self.Y_set:
@@ -223,8 +257,118 @@ class DataSet:
 		if hasattr(self.Y_set[0], '__iter__'):				
 			for y in self.Y_set:
 				if len(y) > self.max_len:
-					self.max_len = len(y)		
+					self.max_len = len(y)
+							
 
+	def computeCentrality(self):
+		# Compute the mean, median and mode of X
+		self.mean_X = np.mean(self.X_set)
+		self.median_X = np.median(self.X_set)				
+		
+		means = []
+		medians = []		
+		modes = []		
+		
+		X_T = np.transpose(self.X_set)
+		for x in X_T:
+			means.append(np.mean(x))
+			medians.append(np.median(x))
+			modes.append(stats.mode(x)[0])				
+		
+		self.means = np.asarray(means)
+		self.medians = np.asarray(medians)
+		self.modes = np.asarray(modes).flatten()		
+		
+		
+	def computeDispersion(self):
+		# compute the standard deviation of this dataset and the inter-quartile range
+		
+		stds = []
+		iqrs = []
+		X_T = np.transpose(self.X_set)
+		for x in X_T:
+			stds.append(x.std())		
+			iqrs.append(iqr(x))					
+		
+		self.stds = stds
+		self.iqrs = iqrs
+		self.stds_x = self.X_set.std()
+		self.iqr_x = iqr(self.X_set)
+		
+		
+	def computeNormalDistribution(self):
+		# find out whether the data has a normal distribution or not
+	
+		x = self.X_set[0]
+	
+		if len(x) > 8:
+			z,pval = stats.normaltest(x)
+			print(z, pval)
+
+			if(pval < 0.055):
+				self.normal_distribution = False
+			else:	
+				self.normal_distribution = True		
+			
+			
+	def computeShape(self):			
+		# Compute the skew and kurtosis
+		
+		X_T = np.transpose(self.X_set)
+		
+		if len(X_T) > 8:
+			self.skew = skew(X_T)
+			self.kurtosis = kurtosis(X_T)		
+		self.kurtosis_x = kurtosis(self.X_set.flatten())				
+		self.skew_x = skew(self.X_set.flatten())				
+		
+	def computeDistribution(self):
+		# find the distribution of labels
+		
+		labels = set(self.labels)
+		
+		self.label_distribution = np.histogram(self.labels, bins=len(labels))[0]
+		
+
+	def normalized(self, a, axis=-1, order=2):
+	
+		l2 = np.atleast_1d(np.linalg.norm(a, order, axis)) 
+		l2[l2==0] = 1
+		return a / np.expand_dims(l2, axis)
+
+	
+	
+	def getNormalisedVector(self):
+		
+		vector = []
+		if self.prediction == "classification":
+			vector.append(1)
+		else:	
+			vector.append(0)
+		vector.append(self.max_len)
+		vector.append(self.outputs)
+		if self.data_type == "numeric":
+			vector.append(0)
+		else:
+			vector.append(1)
+		
+		vector.append(len(self.X_set))
+		vector.append(len(self.vocab))
+		vector.append(self.mean_X)
+		vector.append(self.median_X)
+		vector.append(self.stds_x)												
+		vector.append(self.iqr_x)
+		vector.append(self.skew_x)
+		vector.append(self.kurtosis_x)
+		if self.normal_distribution == True:
+			vector.append(1)
+		else:	
+			vector.append(0)
+		normalised = self.normalized(vector)
+		
+		return normalised								
+		
+		
 		
 	def shuffleAndSplit(self):		
 		
@@ -235,14 +379,11 @@ class DataSet:
 		
 		# Explicitly set apart 10% for validation data that we never train over		
 		split_at = int(len(X) * 0.8)
-		print(split_at)
 		X_train = X[:split_at]
 		X_val = X[split_at:]
 		Y_train = Y[:split_at]		
 		Y_val = Y[split_at:]				
-		
-#		(X_train, X_val) = (_slice_arrays(X, 0, split_at), _slice_arrays(X, split_at))
-#		(Y_train, Y_val) = (Y[:int(split_at)], Y[int(split_at):])		
+			
 		
 		print('Shuffled and split dataset into', len(X_train), 'training instances and', len(X_val), 'test instances.')
 		
@@ -285,6 +426,7 @@ class DataSet:
 		ax.set_zlabel("3rd eigenvector")
 		ax.w_zaxis.set_ticklabels([])
 	
+		plt.savefig('fig.png',  format='png', dpi=1200)	
 		plt.show()
 	
 			

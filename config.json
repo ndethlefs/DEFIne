@@ -1,6 +1,6 @@
 {
     "dl_parameters":{
-        "model_name":"heart_disease_config_test",
+        "model_name":"test_model",
         "model_string":"MLP",
         "layers":2,        
         "batch_size":32,
@@ -21,8 +21,8 @@
         "learning_rate":0.03
     },
     "dataset":{
-        "path":"3D_spatial_network.txt",
-        "weights_out":"cleveland-out.h5"        
+        "path":"test-out.txt",
+        "weights_out":"test-weights.h5"        
     },
     "setup":{
         "train":"False",
