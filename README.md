@@ -26,10 +26,10 @@ achieves equivalent accuracy and runtime to state-of-the-art models, while requi
 <figure>
 <img src="/img/results.png" alt="drawing" width="400"/>
 <figcaption>
-<emph>Performance results (including hyper-parameter optimisation and runtime comparison) in a number of domains.</emph>
+<em>Performance results (including hyper-parameter optimisation and runtime comparison) in a number of domains.</em>
  </figcaption>
 </figure>
-</br>
+</br></br></br>
 
 # Code
 
