@@ -39,9 +39,10 @@ DEFIne can be run from the <code>test.py</code> example file. The <code>config</
 <figure>
 <img src="/img/code.png" alt="drawing" width="400"/>
 <figcaption>
-Minimal DEFIne code example for training a 2-layered multi-layer perceptron. 
+<em>Minimal DEFIne code example for training a 2-layered multi-layer perceptron. </em>
  </figcaption>
  </figuer>
+ </br></br></br>
 
 The <code>data_repository</code> contains example datasets for a variety of classification and regression tasks.
 
