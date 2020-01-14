@@ -14,9 +14,10 @@ visualisations. It is build in Python on top of deep  learning libraries Keras a
 <figure>
 <img src="/img/architecture.png" alt="drawing" width="400"/>
 <figcaption>
-Architecture for code optimisation and generation.
+<em>Architecture for code optimisation and generation.</em>
  </figcaption>
 </figure>
+</br></br></br>
 
 
 In the paper, we present a proof-of-concept results for heart disease diagnosis, hand-written digit recognition and 
